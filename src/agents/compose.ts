@@ -39,7 +39,13 @@ export function composeAgent(entry: ManifestEntry, vars: ComposeVars, knowledgeB
 
   const agentPrompt = (((config.conversation_config ??= {}).agent ??= {}).prompt ??= {});
   agentPrompt.prompt = prompt;
-  agentPrompt.tools = tools;
+  // ElevenLabs takes `prompt.tools` as the agent's complete tool list: system tools missing from it
+  // are switched off even when `built_in_tools` enables them (skip_turn ended up null). So the
+  // enabled built-in tools are listed in both places.
+  const builtIn = Object.values((agentPrompt.built_in_tools ?? {}) as Record<string, Json | null>).filter(
+    (t): t is Json => t !== null,
+  );
+  agentPrompt.tools = [...tools, ...builtIn];
   if (knowledgeBase?.length) agentPrompt.knowledge_base = knowledgeBase;
   if (vars.postCallWebhookId) {
     const settings = (config.platform_settings ??= {});
