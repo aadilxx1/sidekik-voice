@@ -18,7 +18,7 @@ describe('agents as code', () => {
 
   it('injects the prompt file, keeping its dynamic variables for ElevenLabs', () => {
     const body = composeAgent(entry('interviewer'), vars);
-    expect(prompt(body).prompt).toMatch(/^You are Sidekik, an apprentice sitting next to \{\{expert_name\}\}/);
+    expect(prompt(body).prompt).toMatch(/^You are Sidekik, a silent apprentice sitting next to \{\{expert_name\}\}/);
     expect(prompt(body).prompt).toContain('{{prior_summary}}');
     expect(prompt(composeAgent(entry('interviewer-debrief'), vars)).prompt).toContain('[SIDEKIK] TEACHBACK:');
   });
@@ -32,6 +32,9 @@ describe('agents as code', () => {
       'webhook:check_guardrails',
       'webhook:get_step',
       'webhook:get_expert_moment',
+      // Built-in tools are repeated in `tools`, or ElevenLabs switches them off.
+      'system:skip_turn',
+      'system:end_call',
     ]);
     const check = tools.find((t) => t.name === 'check_guardrails')!;
     expect(check.api_schema.url).toBe('https://api.sidekik.live/v1/tools/check_guardrails');

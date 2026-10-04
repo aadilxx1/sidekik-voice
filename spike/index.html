@@ -48,12 +48,19 @@
         connectionType: 'webrtc',
         dynamicVariables: {
           session_id: 'spike', expert_name: 'Sabine', learner_name: 'Lena', workflow_name: 'Supplier invoice coding',
-          language: 'de', prior_summary: 'none', open_items: 'none',
+          language: 'en', prior_summary: 'none', open_items: 'none',
         },
         onStatusChange: ({ status }) => { $('status').textContent = status; log(`status ${status}`); },
         onModeChange: ({ mode }) => { $('mode').textContent = mode; if (mode === 'speaking') $('spoke').textContent = ++spoke; log(`mode ${mode}`, mode === 'speaking' ? 'agent' : ''); },
         onMessage: ({ source, message }) => log(`${source}: ${message}`, source === 'ai' ? 'agent' : ''),
         onError: (err) => log(`error ${err}`),
+        // Log client-tool calls (the real rooms act on them) so tool use is visible here.
+        clientTools: Object.fromEntries(
+          ['mark_off_record', 'show_status', 'replay_moment', 'highlight_field'].map((name) => [
+            name,
+            async (params) => (log(`tool ${name} ${JSON.stringify(params)}`, 'agent'), 'ok'),
+          ]),
+        ),
       });
       $('start').disabled = true; $('stop').disabled = false;
     };
@@ -68,7 +75,7 @@
       log(`sent ctx #${b.dataset.ctx} (context_id screen)`);
     }));
     $('ask').onclick = () => {
-      conversation?.sendUserMessage('[SIDEKIK] ASK: Warum haben Sie die Kostenstelle von 4711 auf 0400 geändert?');
+      conversation?.sendUserMessage('[SIDEKIK] ASK: Why did you change the cost center from 4711 to 0400?');
       log('sent [SIDEKIK] ASK');
     };
     $('timer').onclick = () => {
