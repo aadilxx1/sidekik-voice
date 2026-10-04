@@ -10,7 +10,7 @@
       "type": "object",
       "required": ["session_id", "query", "scope"],
       "properties": {
-        "session_id": { "type": "string", "description": "The current session.", "dynamic_variable": "session_id" },
+        "session_id": { "type": "string", "dynamic_variable": "session_id" },
         "query": { "type": "string", "description": "What to look up, in a few words." },
         "scope": { "type": "string", "description": "session: this session only; workflow: every session of the workflow.", "enum": ["session", "workflow"] }
       }

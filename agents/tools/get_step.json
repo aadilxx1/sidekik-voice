@@ -10,7 +10,7 @@
       "type": "object",
       "required": ["session_id"],
       "properties": {
-        "session_id": { "type": "string", "description": "The current session.", "dynamic_variable": "session_id" },
+        "session_id": { "type": "string", "dynamic_variable": "session_id" },
         "step_id": { "type": "string", "description": "A step UUID; leave out for the learner's current step." }
       }
     }
