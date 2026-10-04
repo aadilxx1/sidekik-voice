@@ -18,7 +18,7 @@ describe('agents as code', () => {
 
   it('injects the prompt file, keeping its dynamic variables for ElevenLabs', () => {
     const body = composeAgent(entry('interviewer'), vars);
-    expect(prompt(body).prompt).toMatch(/^You are Sidekik, a silent apprentice sitting next to \{\{expert_name\}\}/);
+    expect(prompt(body).prompt).toMatch(/^You are Sidekik, a quiet apprentice sitting next to \{\{expert_name\}\}/);
     expect(prompt(body).prompt).toContain('{{prior_summary}}');
     expect(prompt(composeAgent(entry('interviewer-debrief'), vars)).prompt).toContain('[SIDEKIK] TEACHBACK:');
   });

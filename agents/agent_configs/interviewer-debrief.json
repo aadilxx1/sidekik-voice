@@ -9,7 +9,7 @@
         "llm": "claude-haiku-4-5",
         "temperature": 0.3,
         "built_in_tools": {
-          "skip_turn": { "type": "system", "name": "skip_turn", "description": "Stay silent this turn: the user is narrating, reading, typing or thinking aloud.", "params": { "system_tool_type": "skip_turn" } },
+          "skip_turn": { "type": "system", "name": "skip_turn", "description": "Stay silent this turn while the user narrates, reads, types or thinks aloud. Never use it for a [SIDEKIK] message, or when the user addresses you by name (Sidekik/Sidekick) or asks you a question: answer those.", "params": { "system_tool_type": "skip_turn" } },
           "end_call": { "type": "system", "name": "end_call", "description": "End the call when the user says goodbye.", "params": { "system_tool_type": "end_call" } },
           "language_detection": null
         }
@@ -18,7 +18,7 @@
     "language_presets": {
       "en": { "overrides": { "agent": { "language": "en" } } }
     },
-    "asr": { "provider": "scribe_realtime" },
+    "asr": { "provider": "scribe_realtime", "keywords": ["Sidekik", "cost center", "capex", "opex", "asset number", "4711", "0400", "invoice"] },
     "tts": { "model_id": "eleven_v3_conversational", "expressive_mode": true },
     "turn": { "turn_eagerness": "normal" }
   },

@@ -23,7 +23,8 @@ const env = z
     ELEVENLABS_API_KEY: z.string().min(1),
     SK_TOOL_SECRET: z.string().min(32),
     TOOLS_BASE_URL: z.url().default('https://api.sidekik.live'),
-    EL_POST_CALL_WEBHOOK_ID: z.string().min(1).optional(),
+    // An empty `EL_POST_CALL_WEBHOOK_ID=` (before `agents:webhook` has run) means "not set".
+    EL_POST_CALL_WEBHOOK_ID: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).optional()),
   })
   .parse({ ...process.env, ...(flag('dry-run') && { ELEVENLABS_API_KEY: 'dry-run', SK_TOOL_SECRET: process.env.SK_TOOL_SECRET || 'x'.repeat(32) }) });
 const el = httpElevenLabsClient({ apiKey: env.ELEVENLABS_API_KEY, timeoutMs: 30_000 });

@@ -2,7 +2,7 @@
 
 The whole capture design rests on the Interviewer staying quiet while the expert works. This spike checks that against the pushed agents before anything else depends on it.
 
-**Status: not run yet.** Running it needs `ELEVENLABS_API_KEY`, the pushed agents (`pnpm agents:push`) and a browser with a microphone. Fill in the results table below when it's done.
+**Status: run on 2026-10-04 by Aadil (English only). Questions 1–4 pass after the fixes below; 5 and the off-record check weren't run.** Running it needs `ELEVENLABS_API_KEY`, the pushed agents (`pnpm agents:push`) and a browser with a microphone. Fill in the results table below when it's done.
 
 ## How to run it
 
@@ -34,10 +34,23 @@ The page starts a WebRTC session with a token from `GET /v1/convai/conversation/
 
 | # | Date | Result | Notes |
 |---|---|---|---|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
+| 1 | 2026-10-04 | Pass | 0 agent turns in 60 s of English narration, and nothing after it. Failed on the first run (see below). |
+| 2 | 2026-10-04 | Pass | ctx #1 `is_superseded: true`, ctx #2 `false`; neither read aloud. Asked "Sidekik, what's the cost center on screen right now?" → "0400". |
+| 3 | 2026-10-04 | Pass | No agent turn during 3–5 s mid-sentence pauses or after them. Patient eagerness holds. |
+| 4 | 2026-10-04 | Pass | Asked "Why did you change the cost center from 4711 to 0400?" word for word, in English; silent after the answer. |
+| 5 | | Not run | |
+| off-record | | Not run | Before the prompt fix the agent once called `mark_off_record` unprompted; recheck when the Capture Room is wired. |
+
+German was not tested: the team decided the agents speak **English only**.
+
+### What failed first, and the fixes
+
+1. **`skip_turn` was off.** `agents:push` sent `prompt.tools` with only the client/webhook tools; ElevenLabs treats that list as complete and stored `built_in_tools.skip_turn`/`end_call` as `null`. The agent couldn't stay silent and answered every finished narration with "Got it, thanks." Fix: `composeAgent` repeats the enabled built-in tools in `prompt.tools` (test added). Check with `GET /v1/convai/agents/{id}`: `prompt.tools` must contain `system:skip_turn`.
+2. **Prompt too permissive, then too strict.** "After the expert answers: at most 'Got it, thanks.'" made it acknowledge every narration. Making skip_turn the default on every turn then made it skip `[SIDEKIK] ASK:` and direct questions too (the conversation logs showed `skip_turn` on each). Final prompt: the two must-speak cases come first and say never to skip them; everything else is skip_turn. The `skip_turn` tool description also excludes `[SIDEKIK]` messages and messages that address Sidekik.
+3. **Direct questions garbled by ASR.** Scribe heard "cost center" as "cost and terms". Added ASR keywords (Sidekik, cost center, capex, opex, asset number, 4711, 0400, invoice) and told the prompt to answer the most likely meaning.
+4. **English only.** Interviewer and debrief default language `en`, `language_detection` off; prompts say to always speak English; the spike page uses `language: 'en'` and an English ASK.
+5. **Tool schema rejected.** `session_id` in four webhook tools set both `description` and `dynamic_variable`; ElevenLabs allows one (fixed in #12).
+
+Tip: the ElevenLabs conversation log (`GET /v1/convai/conversations/{id}`) shows each turn's tool calls (`skip_turn`, `contextual_update` with `is_superseded`), which is how these were diagnosed.
 
 **If question 1 fails:** move the silence rule to the top of the prompt, try `turn_eagerness: "patient"` with a longer `turn_timeout`, then a stricter LLM (`claude-sonnet-*`), and record each attempt here. The fallback is to mute the agent's audio in the page between `[SIDEKIK] ASK:` messages, which needs a change in sidekik-web.
